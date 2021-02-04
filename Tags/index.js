@@ -28,6 +28,11 @@ class Tags extends React.Component {
   };
 
   addTag = text => {
+    const validated = typeof this.props.validateTag === 'function'
+      ? this.props.validateTag(text)
+      : true;
+    if(!validated) return;
+
     this.setState(state =>
       ({
         tags: [...state.tags, text.trim()],
@@ -36,6 +41,22 @@ class Tags extends React.Component {
       () => this.props.onChangeTags && this.props.onChangeTags(this.state.tags)
     );
   };
+
+  deleteTag = (index, tag, event) => {
+    this.setState(state =>
+      ({
+        tags: [
+          ...state.tags.slice(0, index),
+          ...state.tags.slice(index + 1)
+        ]
+      }),
+      () => {
+        this.props.onChangeTags &&
+          this.props.onChangeTags(this.state.tags);
+        this.props.onTagPress && this.props.onTagPress(index, tag, event, true);
+      }
+    );
+  }
 
   onChangeText = text => {
     if (text.length === 0) {
@@ -85,19 +106,7 @@ class Tags extends React.Component {
             onPress: event => {
               event.persist();
               if (deleteTagOnPress && !readonly) {
-                this.setState(state =>
-                  ({
-                    tags: [
-                      ...state.tags.slice(0, index),
-                      ...state.tags.slice(index + 1)
-                    ]
-                  }),
-                  () => {
-                    this.props.onChangeTags &&
-                      this.props.onChangeTags(this.state.tags);
-                    onTagPress && onTagPress(index, tag, event, true);
-                  }
-                );
+                this.deleteTag(index, tag, event, true)
               } else {
                 onTagPress && onTagPress(index, tag, event, false);
               }
@@ -145,6 +154,7 @@ Tags.propTypes = {
   createTagOnString: PropTypes.array,
   createTagOnReturn: PropTypes.bool,
   onChangeTags: PropTypes.func,
+  validateTag: PropTypes.func,
   readonly: PropTypes.bool,
   maxNumberOfTags: PropTypes.number,
   deleteTagOnPress: PropTypes.bool,
