@@ -53,7 +53,7 @@ class Tags extends React.Component {
   };
 
   onSubmitEditing = () => {
-    if (!this.props.createTagOnReturn) {
+    if (!this.props.createTagOnReturn || !this.state.text) {
       return;
     }
     this.addTag(this.state.text);
